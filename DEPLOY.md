@@ -65,9 +65,16 @@ docker run -p 8000:8000 -e ANTHROPIC_API_KEY=sk-ant-... -e QA_BACKEND=claude -e 
 
 Environment variables are listed in `.env.example` and defined in `config.py`.
 
-## Verified before shipping
+## Verified
 
-On 2026-09-18, built with `docker build` and run with Render's settings
+**Live at <https://genai-qa-assistant.onrender.com> since 2026-09-18.** Checked
+against the running site: `/api/status` reports the offline backend and 28
+passages, an annual-leave question came back with two citations into
+`leave-policy.md`, a follow-up in the same session resolved to the carry-over
+rule, "What is the dress code?" was declined, `POST /api/upload` returned 403,
+the upload box is hidden in the page, and plain http redirects to https.
+
+Before that, built with `docker build` and run locally with Render's settings
 (`PORT=10000`, `QA_BACKEND=offline`, `QA_ALLOW_UPLOADS=0`):
 
 - `GET /api/status` reports the offline backend, 28 passages, uploads disabled.
@@ -76,4 +83,5 @@ On 2026-09-18, built with `docker build` and run with Render's settings
 - `POST /api/upload` returned 403.
 - The process runs as `appuser`, not root.
 
-Not verified: the Render build itself, which only runs in Render's account.
+Not verified: behaviour with a real API key on the deployment - it has never run
+there with `QA_BACKEND=claude`.
