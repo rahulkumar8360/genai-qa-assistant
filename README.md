@@ -2,6 +2,8 @@
 
 An end-to-end assistant that answers questions about a folder of documents (`.txt`, `.md`, `.pdf`). Every answer cites the passage it came from, and when the documents don't hold the answer it says so instead of guessing. The answers come from Claude, steered by a designed system prompt and few-shot examples. An evaluation harness scores each version of the prompt so every prompt change is backed by a measurement.
 
+Repository: <https://github.com/rahulkumar8360/genai-qa-assistant> - deployment steps in [DEPLOY.md](DEPLOY.md).
+
 It ships with a small fictional company handbook in `data/docs/` (leave, expenses, IT security, remote work) and 24 evaluation questions about it.
 
 ```
