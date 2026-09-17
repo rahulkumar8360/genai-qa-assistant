@@ -1,0 +1,29 @@
+{
+  "description": "Questions over data/docs used to score the assistant. Written before any tuning. 'keywords' must ALL appear in the answer; a keyword of the form 'a|b' is satisfied by either alternative. 'answerable: false' questions are not covered by the documents and the correct behaviour is to decline.",
+  "questions": [
+    {"id": "leave-annual", "question": "How many days of paid annual leave do full-time employees get?", "answerable": true, "source": "leave-policy.md", "keywords": ["24"]},
+    {"id": "leave-carryover", "question": "How many unused leave days can I carry over to next year, and when do they expire?", "answerable": true, "source": "leave-policy.md", "keywords": ["5", "31 March"]},
+    {"id": "leave-doctor-note", "question": "When do I need a doctor's note for sick leave?", "answerable": true, "source": "leave-policy.md", "keywords": ["3"]},
+    {"id": "leave-secondary-caregiver", "question": "How much parental leave does a secondary caregiver get?", "answerable": true, "source": "leave-policy.md", "keywords": ["4 weeks"]},
+    {"id": "leave-contractors", "question": "Are contractors covered by the leave policy?", "answerable": true, "source": "leave-policy.md", "keywords": ["not covered|aren't covered|are not|not eligible"]},
+    {"id": "leave-bereavement-paraphrase", "question": "How much paid time off do I get when someone in my immediate family dies?", "answerable": true, "source": "leave-policy.md", "keywords": ["5 days"]},
+    {"id": "expense-deadline", "question": "What is the deadline for submitting an expense claim?", "answerable": true, "source": "expense-policy.md", "keywords": ["30 days"]},
+    {"id": "expense-business-class", "question": "Can I fly business class on a 9 hour flight?", "answerable": true, "source": "expense-policy.md", "keywords": ["vice president|VP"]},
+    {"id": "expense-hotel-international", "question": "What is the hotel limit per night for international travel?", "answerable": true, "source": "expense-policy.md", "keywords": ["250"]},
+    {"id": "expense-approval-3000", "question": "Who needs to approve an expense claim of 3,000 dollars?", "answerable": true, "source": "expense-policy.md", "keywords": ["department"]},
+    {"id": "expense-mileage", "question": "What is the mileage rate for using my own car?", "answerable": true, "source": "expense-policy.md", "keywords": ["0.58"]},
+    {"id": "security-password-length", "question": "How long must passwords be?", "answerable": true, "source": "it-security.md", "keywords": ["14"]},
+    {"id": "security-lost-laptop", "question": "I lost my work laptop. How quickly do I have to report it?", "answerable": true, "source": "it-security.md", "keywords": ["24 hours"]},
+    {"id": "security-usb", "question": "Can I plug a personal USB stick into my company laptop?", "answerable": true, "source": "it-security.md", "keywords": ["must not|not allowed|cannot|can't|not permitted|prohibited"]},
+    {"id": "remote-days-paraphrase", "question": "How many days a week can I work from home?", "answerable": true, "source": "remote-work.md", "keywords": ["3"]},
+    {"id": "remote-internet", "question": "What is the monthly internet allowance?", "answerable": true, "source": "remote-work.md", "keywords": ["50"]},
+    {"id": "remote-abroad", "question": "How many days per year can I work from another country?", "answerable": true, "source": "remote-work.md", "keywords": ["20"]},
+    {"id": "remote-core-hours", "question": "What are the core collaboration hours?", "answerable": true, "source": "remote-work.md", "keywords": ["11", "15"]},
+    {"id": "none-dental", "question": "Which company provides our dental insurance?", "answerable": false},
+    {"id": "none-dress-code", "question": "What is the dress code in the office?", "answerable": false},
+    {"id": "none-stock-options", "question": "How many shares are granted in the employee stock option plan?", "answerable": false},
+    {"id": "none-gym", "question": "Does the company pay for gym memberships?", "answerable": false},
+    {"id": "none-notice-period", "question": "What is the notice period if I resign from the company?", "answerable": false},
+    {"id": "none-relocation", "question": "How much is the relocation allowance for new employees?", "answerable": false}
+  ]
+}

@@ -1,0 +1,7 @@
+# Runtime dependencies. Development extras (the test suite) are in
+# requirements-dev.txt so the deployed image stays small.
+anthropic>=0.117.0
+pypdf>=6.0
+fastapi>=0.115
+uvicorn>=0.30
+python-multipart>=0.0.9

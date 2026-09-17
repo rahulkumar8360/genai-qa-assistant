@@ -1,0 +1,26 @@
+# Render blueprint. In the Render dashboard: New > Blueprint, point it at this
+# repository, and it creates the service with the settings below.
+#
+# The free plan sleeps after ~15 minutes with no traffic; the next visit takes
+# about 30 seconds to wake it. Its disk is temporary, so anything uploaded is
+# lost on restart - which is one reason uploads are off here.
+
+services:
+  - type: web
+    name: genai-qa-assistant
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: singapore
+    healthCheckPath: /api/status
+    envVars:
+      # offline = no API key, no cost, answers are quoted passages
+      - key: QA_BACKEND
+        value: offline
+      # the URL is public, so nobody can push files onto the server
+      - key: QA_ALLOW_UPLOADS
+        value: "0"
+      # set the value later in the Render dashboard to switch to real answers;
+      # sync: false means Render never stores it in this file or in git
+      - key: ANTHROPIC_API_KEY
+        sync: false

@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Document Q&amp;A Assistant</title>
+<style>
+  :root {
+    --bg: #f6f6f3; --panel: #ffffff; --text: #1d1d1b; --muted: #6b6b66;
+    --line: #e3e2dc; --accent: #2f5d50; --accent-soft: #e4eeea; --warn: #8a5a12; --warn-soft: #f7eedd;
+    --user: #2f5d50; --user-text: #ffffff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #171816; --panel: #20211f; --text: #ecebe6; --muted: #9c9b94;
+      --line: #33342f; --accent: #8cc2b0; --accent-soft: #28362f; --warn: #e0b36a; --warn-soft: #3a3020;
+      --user: #35584c; --user-text: #f3f3ef;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .layout { display: grid; grid-template-columns: 290px 1fr; height: 100vh; }
+  aside { border-right: 1px solid var(--line); background: var(--panel); padding: 20px 18px;
+          overflow-y: auto; display: flex; flex-direction: column; gap: 18px; }
+  h1 { font-size: 17px; margin: 0; }
+  h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 8px; }
+  .status { font-size: 13px; color: var(--muted); }
+  .status b { color: var(--text); font-weight: 600; }
+  .badge { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px;
+           background: var(--accent-soft); color: var(--accent); }
+  .badge.offline { background: var(--warn-soft); color: var(--warn); }
+  .docs { list-style: none; margin: 0; padding: 0; font-size: 14px; }
+  .docs li { display: flex; justify-content: space-between; align-items: center; gap: 8px;
+             padding: 6px 0; border-bottom: 1px solid var(--line); }
+  .docs small { color: var(--muted); white-space: nowrap; }
+  .docs button { border: 0; background: none; color: var(--muted); cursor: pointer; font-size: 16px; }
+  .upload label { display: block; border: 1px dashed var(--line); border-radius: 8px; padding: 14px;
+                  text-align: center; cursor: pointer; font-size: 13px; color: var(--muted); }
+  .upload label:hover { border-color: var(--accent); color: var(--accent); }
+  .upload input { display: none; }
+  main { display: flex; flex-direction: column; min-width: 0; height: 100vh; }
+  #chat { flex: 1; overflow-y: auto; padding: 28px max(24px, calc((100% - 760px) / 2)); }
+  .empty { color: var(--muted); margin-top: 12vh; text-align: center; }
+  .empty button { margin: 4px; border: 1px solid var(--line); background: var(--panel); color: var(--text);
+                  border-radius: 999px; padding: 6px 12px; cursor: pointer; font-size: 13px; }
+  .msg { margin: 0 0 18px; }
+  .msg.user { display: flex; justify-content: flex-end; }
+  .msg.user .bubble { background: var(--user); color: var(--user-text); border-radius: 14px 14px 4px 14px;
+                      padding: 9px 14px; max-width: 80%; white-space: pre-wrap; }
+  .msg.bot .bubble { background: var(--panel); border: 1px solid var(--line); border-radius: 14px 14px 14px 4px;
+                     padding: 12px 16px; white-space: pre-wrap; }
+  .msg.bot.refused .bubble { border-color: var(--warn); }
+  .cite { display: inline-block; min-width: 20px; padding: 0 5px; margin: 0 1px; border-radius: 5px;
+          background: var(--accent-soft); color: var(--accent); font-size: 12px; font-weight: 600;
+          text-align: center; cursor: pointer; border: 0; }
+  .sources { margin-top: 8px; font-size: 13px; }
+  .sources details { border-left: 2px solid var(--line); padding: 2px 0 2px 10px; margin: 4px 0; }
+  .sources summary { cursor: pointer; color: var(--muted); }
+  .sources details[open] { border-left-color: var(--accent); }
+  .sources p { margin: 6px 0; color: var(--text); }
+  .meta { font-size: 12px; color: var(--muted); margin-top: 6px; }
+  .error { color: #b3261e; }
+  form { display: flex; gap: 10px; padding: 14px max(24px, calc((100% - 760px) / 2)) 22px;
+         border-top: 1px solid var(--line); background: var(--bg); }
+  textarea { flex: 1; resize: none; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px;
+             font: inherit; background: var(--panel); color: var(--text); min-height: 46px; max-height: 160px; }
+  textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+  .btn { border: 0; border-radius: 10px; padding: 0 18px; background: var(--accent); color: var(--panel);
+         font: inherit; font-weight: 600; cursor: pointer; }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .btn.ghost { background: none; color: var(--muted); border: 1px solid var(--line); font-weight: 400; }
+  @media (max-width: 760px) {
+    .layout { grid-template-columns: 1fr; height: auto; }
+    aside { border-right: 0; border-bottom: 1px solid var(--line); }
+    main { height: 80vh; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside>
+    <div>
+      <h1>Document Q&amp;A Assistant</h1>
+      <div class="status" id="status">Loading...</div>
+    </div>
+    <div>
+      <h2>Documents</h2>
+      <ul class="docs" id="docs"></ul>
+    </div>
+    <div class="upload">
+      <h2>Add a document</h2>
+      <label>Click to upload .txt, .md or .pdf
+        <input type="file" id="file" accept=".txt,.md,.pdf">
+      </label>
+      <div class="meta" id="upload-msg"></div>
+    </div>
+  </aside>
+
+  <main>
+    <div id="chat">
+      <div class="empty" id="empty">
+        <p>Ask anything about the documents on the left. Answers cite the passage they came from.</p>
+        <button data-q="How many days of annual leave do I get?">Annual leave</button>
+        <button data-q="Can I fly business class on a 9 hour flight?">Business class</button>
+        <button data-q="I lost my laptop. What do I do?">Lost laptop</button>
+        <button data-q="What is the dress code?">Something not in the docs</button>
+      </div>
+    </div>
+    <form id="ask">
+      <textarea id="q" rows="1" placeholder="Ask a question... (Enter to send, Shift+Enter for a new line)"></textarea>
+      <button class="btn" id="send" type="submit">Ask</button>
+      <button class="btn ghost" id="reset" type="button" title="Forget the conversation">New chat</button>
+    </form>
+  </main>
+</div>
+
+<script>
+// session id lets the server keep this tab's conversation separate from others
+let sessionId = crypto.randomUUID();
+
+const chat = document.getElementById("chat");
+const input = document.getElementById("q");
+const sendBtn = document.getElementById("send");
+
+// everything that comes back from the server or the user is escaped before it
+// touches innerHTML - document text can contain anything
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
+}
+
+function addMessage(cls, html) {
+  document.getElementById("empty")?.remove();
+  const div = document.createElement("div");
+  div.className = "msg " + cls;
+  div.innerHTML = html;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+  return div;
+}
+
+function renderAnswer(r) {
+  // turn [1] / [1, 2] markers into chips that open the matching source below
+  const valid = new Set(r.citations.map(c => c.n));
+  const answer = esc(r.answer).replace(/\[(\d+(?:\s*,\s*\d+)*)\]/g, (m, group) =>
+    group.split(",").map(x => x.trim()).map(n =>
+      valid.has(Number(n)) ? `<button class="cite" data-n="${n}">${n}</button>` : `[${n}]`
+    ).join(""));
+
+  const sources = [...r.citations].sort((a, b) => a.n - b.n).map(c => `
+    <details data-n="${c.n}">
+      <summary>[${c.n}] ${esc(c.source)}${c.section ? " &rsaquo; " + esc(c.section) : ""}</summary>
+      <p>${esc(c.text)}</p>
+    </details>`).join("");
+
+  const tokens = r.usage.input_tokens ? ` &middot; ${r.usage.input_tokens} in / ${r.usage.output_tokens} out tokens` : "";
+  const meta = `${esc(r.model || "no model call")} &middot; prompt ${esc(r.prompt_version)} &middot; ${r.latency_ms} ms${tokens}`;
+
+  const div = addMessage("bot" + (r.refused ? " refused" : ""),
+    `<div class="bubble">${answer}</div>
+     ${sources ? `<div class="sources">${sources}</div>` : ""}
+     <div class="meta">${meta}</div>`);
+
+  div.querySelectorAll(".cite").forEach(btn => btn.addEventListener("click", () => {
+    const d = div.querySelector(`details[data-n="${btn.dataset.n}"]`);
+    if (d) { d.open = true; d.scrollIntoView({block: "nearest", behavior: "smooth"}); }
+  }));
+}
+
+async function ask(question) {
+  addMessage("user", `<div class="bubble">${esc(question)}</div>`);
+  sendBtn.disabled = true;
+  const pending = addMessage("bot", `<div class="bubble meta">Thinking...</div>`);
+  try {
+    const res = await fetch("/api/ask", {
+      method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({question, session_id: sessionId}),
+    });
+    const data = await res.json();
+    pending.remove();
+    if (!res.ok) throw new Error(data.detail || res.statusText);
+    renderAnswer(data);
+  } catch (e) {
+    pending.remove();
+    addMessage("bot", `<div class="bubble error">${esc(e.message)}</div>`);
+  } finally {
+    sendBtn.disabled = false;
+    input.focus();
+  }
+}
+
+document.getElementById("ask").addEventListener("submit", e => {
+  e.preventDefault();
+  const q = input.value.trim();
+  if (!q) return;
+  input.value = "";
+  ask(q);
+});
+
+input.addEventListener("keydown", e => {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    document.getElementById("ask").requestSubmit();
+  }
+});
+
+document.querySelectorAll(".empty button").forEach(b => b.addEventListener("click", () => ask(b.dataset.q)));
+
+document.getElementById("reset").addEventListener("click", async () => {
+  await fetch("/api/reset", {method: "POST", headers: {"Content-Type": "application/json"},
+                             body: JSON.stringify({session_id: sessionId})});
+  sessionId = crypto.randomUUID();
+  chat.innerHTML = "";
+  addMessage("bot", `<div class="meta">New conversation started.</div>`);
+});
+
+function renderStatus(s) {
+  const offline = s.backend === "offline";
+  // the upload box is hidden rather than left to fail with a 403
+  document.querySelector(".upload").hidden = !s.uploads_enabled;
+  document.getElementById("status").innerHTML =
+    `<span class="badge ${offline ? "offline" : ""}">${esc(s.backend)}</span> <b>${esc(s.model || "")}</b><br>
+     Prompt ${esc(s.prompt_version)} &middot; ${s.passages} passages` +
+    (offline ? `<br>Offline mode quotes matching sentences. Add an ANTHROPIC_API_KEY for generated answers.` : "");
+
+  document.getElementById("docs").innerHTML = s.documents.map(d => `
+    <li><span>${esc(d.source)}</span>
+        <span><small>${d.chunks} passages</small>
+        ${d.removable ? `<button title="Remove" data-src="${esc(d.source)}">&times;</button>` : ""}</span></li>`).join("");
+
+  document.querySelectorAll("#docs button").forEach(b => b.addEventListener("click", async () => {
+    const res = await fetch("/api/documents/" + encodeURIComponent(b.dataset.src), {method: "DELETE"});
+    if (res.ok) renderStatus(await res.json());
+  }));
+}
+
+document.getElementById("file").addEventListener("change", async e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const msg = document.getElementById("upload-msg");
+  msg.textContent = "Uploading " + file.name + "...";
+  const form = new FormData();
+  form.append("file", file);
+  const res = await fetch("/api/upload", {method: "POST", body: form});
+  const data = await res.json();
+  if (res.ok) { renderStatus(data); msg.textContent = "Added " + file.name + "."; }
+  else msg.textContent = data.detail || "Upload failed.";
+  e.target.value = "";
+});
+
+fetch("/api/status").then(r => r.json()).then(renderStatus);
+</script>
+</body>
+</html>
